@@ -1,47 +1,86 @@
 package com.example.pr_19
 
+import android.app.DatePickerDialog
+import android.app.DatePickerDialog.OnDateSetListener
+import android.app.TimePickerDialog
+import android.app.TimePickerDialog.OnTimeSetListener
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.pr_19.ui.theme.PR19Theme
+import android.text.format.DateUtils
+import android.view.View
+import android.widget.Button
+import android.widget.DatePicker
+import android.widget.TextView
+import android.widget.TimePicker
+import androidx.appcompat.app.AppCompatActivity
+import java.util.Calendar
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
+    var timePick: TextView? = null
+    var btnTime: Button? = null
+    var btnDate: Button? = null
+    var dateAndTime: Calendar = Calendar.getInstance()
+
+    protected override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            PR19Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+        setContentView(R.layout.activity_main)
+
+        timePick = findViewById(R.id.timePick)
+        btnDate = findViewById(R.id.btnDate)
+        btnTime = findViewById(R.id.btnTime)
+
+        btnDate!!.setOnClickListener(this)
+        btnTime!!.setOnClickListener(this)
+
+        setInitialDateTime()
+    }
+
+    // Метод для установки начальных даты и времени в текстовое поле
+    private fun setInitialDateTime() {
+        timePick!!.setText(
+            DateUtils.formatDateTime(
+                this,
+                dateAndTime.getTimeInMillis(),
+                (DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR
+                        or DateUtils.FORMAT_SHOW_TIME)
+            )
+        )
+    }
+
+    override fun onClick(view: View) {
+        if (view.getId() == R.id.btnDate) {
+            DatePickerDialog(
+                this@MainActivity, d,
+                dateAndTime.get(Calendar.YEAR),
+                dateAndTime.get(Calendar.MONTH),
+                dateAndTime.get(Calendar.DAY_OF_MONTH)
+            )
+                .show()
+        } else if (view.getId() == R.id.btnTime) {
+            TimePickerDialog(
+                this@MainActivity, t,
+                dateAndTime.get(Calendar.HOUR_OF_DAY),
+                dateAndTime.get(Calendar.MINUTE), true
+            )
+                .show()
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    // Обработчик выбора времени, обновляет объект Calendar и экран
+    var t: OnTimeSetListener = object : OnTimeSetListener {
+        override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
+            dateAndTime.set(Calendar.HOUR_OF_DAY, hourOfDay)
+            dateAndTime.set(Calendar.MINUTE, minute)
+            setInitialDateTime()
+        }
+    }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PR19Theme {
-        Greeting("Android")
+    // Обработчик выбора даты, обновляет объект Calendar и экран
+    var d: OnDateSetListener = object : OnDateSetListener {
+        override fun onDateSet(view: DatePicker?, year: Int, monthOfYear: Int, dayOfMonth: Int) {
+            dateAndTime.set(Calendar.YEAR, year)
+            dateAndTime.set(Calendar.MONTH, monthOfYear)
+            dateAndTime.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            setInitialDateTime()
+        }
     }
 }
